@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronoun Closet</title>
+</head>
+<body>
+
+<p>Welcome to the Pronoun Closet! Here, you can try out different combinations of names and pronouns and rate them to see which ones you are most comfortable with. No data is stored by the website, but please note that your browser may store some of the names and pronouns you try in cache.</p>
+
+<p>This was a very quick and simple project and is meant to be used short-term for trying different combinations of things. As such, there are some glitches, for example it is possible to rate the same name/pronoun set multiple times and have it appear multiple times in the list. Since patching this would require a lot of rewriting and this site is meant to be of short-term use anyway, I decided to leave it as is.</p>
+
+<p>Using this site is simple. Fill in the fields with the name and pronouns you would like to try out and click submit to see a sample sentence using your chosen name and pronouns. You can click submit again to see a different sample sentence if desired. Afterwards, you can rate how you feel about the set of name/pronouns and it will appear in an automatically sorted list. You can click any of the items in this list to try the name/pronoun set again.</p>
+
+<p>The singular/plural switch is for words like is/are and was/were, which depend on the pronoun used. An example of the use of a singular pronoun would be, "He <b>is</b> a good friend." An example of a plural pronoun would be, "They <b>are</b> a good friend." You can set this option depending on the pronouns you are trying so that the words used in the sample sentences are grammatically correct.</p>
+
+<form id="mainForm" action="javascript:void(0)">
+    <label for="fname">Name:</label>
+    <input type="text" id="fname" name="fname" required="true"><br>
+
+    <label for="subj">Subject:</label>
+    <input type="text" id="subj" name="subj" placeholder="they" required="true"><br>
+    <label for="obj">Object:</label>
+    <input type="text" id="obj" name="obj" placeholder="them" required="true"><br>
+    <label for="possdet">Posessive determiner:</label>
+    <input type="text" id="possdet" name="possdet" placeholder="their" required="true"><br>
+    <label for="poss">Possessive:</label>
+    <input type="text" id="poss" name="poss" placeholder="theirs" required="true"><br>
+    <label for="refl">Reflexive:</label>
+    <input type="text" id="refl" name="refl" placeholder="themselves" required="true"><br>
+
+    <input type="radio" id="singular" name="prnform" value="singular" required="true">
+    <label for="singular">Singular</label>
+    <input type="radio" id="plural" name="prnform" value="plural" required="true">
+    <label for="singular">Plural</label><br>
+
+    <input type="submit" value="Submit">
+</form>
+
+<p id="textoutput">Sample sentence will go here.</p>
+
+<div id="ratings">
+    <button data-rating="0">0</button>
+    <button data-rating="1">1</button>
+    <button data-rating="2">2</button>
+    <button data-rating="3">3</button>
+    <button data-rating="4">4</button>
+    <button data-rating="5">5</button>
+</div>
+
+<br>
+
+<div id="prevSetsDiv"></div>
+
+<script>
+
+const form = document.getElementById("mainForm");
+const textoutput = document.getElementById("textoutput");
+const ratingButtons = document.getElementById("ratings");
+const prevSetsDiv = document.getElementById("prevSetsDiv");
+
+let fname;
+let subj;
+let obj;
+let possdet;
+let poss;
+let refl;
+let prnform;
+
+form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    fname = data.fname;
+    subj = data.subj;
+    obj = data.obj;
+    possdet = data.possdet;
+    poss = data.poss;
+    refl = data.refl;
+    prnform = data.prnform;
+    
+    updateSampleSentence();
+});
+
+ratingButtons.addEventListener("click", (event) => {
+    if(event.target !== ratingButtons) {
+        if(fname === undefined) {
+            return;
+        }
+
+        const rating = event.target.getAttribute("data-rating");
+
+        const btn = document.createElement("button");
+        btn.className = "prnSet";
+        btn.setAttribute("data-fname", fname);
+        btn.setAttribute("data-subj", subj);
+        btn.setAttribute("data-obj", obj);
+        btn.setAttribute("data-possdet", possdet);
+        btn.setAttribute("data-poss", poss);
+        btn.setAttribute("data-refl", refl);
+        btn.setAttribute("data-rating", rating);
+
+        const node = document.createTextNode(`${fname}, ${subj}/${obj}/${possdet}/${poss}/${refl}`);
+        btn.appendChild(node);
+
+        
+        for(let i = 0; i < prevSetsDiv.childElementCount; i++) {
+            if(prevSetsDiv.children[i].getAttribute("data-rating") < rating) {
+                prevSetsDiv.insertBefore(btn, prevSetsDiv.children[i]);
+                return;
+            }
+        }
+        prevSetsDiv.appendChild(btn);
+    }
+})
+
+prevSetsDiv.addEventListener("click", (event) => {
+    if(event.target !== prevSetsDiv) {
+        fname = event.target.getAttribute("data-fname");
+        subj = event.target.getAttribute("data-subj");
+        obj = event.target.getAttribute("data-obj");
+        possdet = event.target.getAttribute("data-possdet");
+        poss = event.target.getAttribute("data-poss");
+        refl = event.target.getAttribute("data-refl");
+        prnform = event.target.getAttribute("data.prnform");
+
+        updateSampleSentence();
+    }
+})
+
+function capF(val) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
+
+function updateSampleSentence() {
+    const sps = prnform === "singular" ? "'s" : "'re";
+    const spwas = prnform === "singular" ? "was" : "were";
+    const spverb = prnform === "singular" ? "s" : "";
+
+    const sampleSentences = [
+        `Have you seen ${fname}? I think this notebook is ${poss}. I wouldn't want ${obj} to lose ${possdet} notebook, so could you return it to ${obj} for me? I'm in a bit of a hurry.`,
+        `I talked to ${fname} the other day, and I thought ${subj} ${spwas} super fun to be around! ${capF(subj)} talked about ${possdet} interests and I thought they were pretty cool. If you get a chance, you should talk to ${obj}!`,
+        `I saw ${fname} eating by ${refl} the other day. I know it's not that big of a deal, but I want ${obj} to know that I care about ${obj} if ${subj}${sps} feeling lonely, and that ${possdet} feelings matter.`,
+        `${fname} is super cool! I'm glad to call myself ${possdet} friend. I've known ${obj} for a while, and ${subj}${sps} super kind and great to talk to. I hope we can hang out with ${obj} soon!`,
+        `If you're having trouble with that, you should ask ${fname} for help. ${capF(subj)} explained it to me really well, and ${possdet} tips were really helpful too! I'm sure ${subj} won't mind if you ask ${obj} about it.`,
+        `Do you know ${fname}? I haven't seen ${obj} much, but I heard ${subj}${sps} the one to talk to about this stuff. I know one of ${possdet} friends, so I can ask where to find ${obj}. Don't worry, I heard ${subj}${sps} super easygoing about this stuff!`,
+        `That's where ${fname} sits. ${capF(subj)} tend${spverb} to keep to ${refl} and ${possdet} friend group in here, but I haven't heard anything bad about ${obj}. ${capF(subj)} seem${spverb} pretty chill.`,
+        `${fname} is so cool! I wish I could talk to ${obj}, but I wouldn't know what to say. I would love to be ${possdet} friend. Do you know anything about ${obj}? I think we would get along really well, but I'm not sure.`
+    ];
+
+    textoutput.textContent = sampleSentences[Math.floor(Math.random() * sampleSentences.length)];
+}
+
+</script>
+</body>
+</html>
